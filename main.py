@@ -29,11 +29,13 @@ MAX_WORKERS = 10  # Number of threads for parallel scraping
 BUCKET_NAME = "webscraping-s3-7483-8939-6719"  # <-- your S3 bucket name
 
 # Create S3 client
-s3 = boto3.client(
-    "s3",
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
-)
+# s3 = boto3.client(
+#     "s3",
+#     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+#     aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+# )
+
+s3 = boto3.client("s3")
 
 # -------------------------------
 # HELPER FUNCTIONS
