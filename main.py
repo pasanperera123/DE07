@@ -146,5 +146,8 @@ def job_handler():
     scraped_data = data_extraction()
     transformed_data = data_transformation(scraped_data)
     data_loading(transformed_data)
+    return {"statusCode": 200, "body": "Scraping completed successfully"}
+
+
 
 job_handler()
