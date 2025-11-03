@@ -1,0 +1,52 @@
+name: Deploy Lambda Docker Image
+
+on:
+  push:
+    branches: [ "main" ]   # Run on pushes to main branch
+  workflow_dispatch:       # Allow manual trigger
+
+env:
+  AWS_REGION: ap-south-1                   # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: newberk-ecr/webscraper           # set this to your Amazon ECR repository name
+  LAMBDA_FUNCTION_NAME: lambda-docker-demo
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout  # 1️⃣ Checkout your repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials # 2️⃣ Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR # 3️⃣ Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR # 4️⃣ Build, tag, and push Docker image to ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        echo "Building image..."
+        docker build -t $ECR_REPOSITORY .
+        docker tag $ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+    - name: Update Lambda function  # 5️⃣ Update the Lambda function to use new image
+      run: |
+        echo "Deploying new image to Lambda..."
+        aws lambda update-function-code \
+          --function-name ${{ env.LAMBDA_FUNCTION_NAME }} \
+          --image-uri ${{ env.IMAGE_URI }}
