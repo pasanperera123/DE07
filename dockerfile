@@ -1,20 +1,17 @@
-# Mentioning amd64 specifically cuz on the mac it defaulted to arm64 and failed in the Azure container.
-# It seems the SQL driver-related stuff won't install on ARM.
-FROM --platform=linux/amd64 python:3.11-slim-bookworm
+# Use AWS Lambda Python base image
+FROM public.ecr.aws/lambda/python:3.11
 
-
-
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
+# Install build dependencies
 COPY . /app
 
-# Install any needed packages specified in requirements.txt
-RUN pip install -r requirements.txt
+# Install system dependencies required to build numpy/pandas
+RUN pip install --upgrade pip \
+ && pip install --only-binary=:all: -r requirements.txt
 
-# Run main.py when the container launches
-CMD ["python3", "main.py"]
+# Set the Lambda handler (module.function)
+CMD ["main.lambda_handler"]
 
-# docker build -t scraper .
-# docker run -p 80:80 scraper
+# docker build -t my-lambda-scraper .
