@@ -4,13 +4,8 @@ import pandas as pd
 import time
 import random
 import boto3
-#import os
 import io
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
-#from dotenv import find_dotenv, load_dotenv
-#load_dotenv(find_dotenv())
-
 
 # -------------------------------
 # CONFIGURATION
@@ -29,13 +24,15 @@ MAX_WORKERS = 10  # Number of threads for parallel scraping
 BUCKET_NAME = "webscraping-s3-7483-8939-6719"  # <-- your S3 bucket name
 
 #Create S3 client
+s3 = boto3.client("s3")
+
 # s3 = boto3.client(
 #     "s3",
 #     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
 #     aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
 # )
 
-s3 = boto3.client("s3")
+
 
 # -------------------------------
 # HELPER FUNCTIONS
@@ -132,7 +129,7 @@ def data_loading(df):
 
     
 
-      # Upload to S3
+    # Upload to S3
     s3.put_object(
         Bucket=BUCKET_NAME,
         Key=filename,
@@ -164,6 +161,3 @@ def lambda_handler(event=None, context=None):
             "statusCode": 500,
             "body": f"Error: {str(e)}"
         }
-
-# if __name__ == "__main__":
-#   lambda_handler()
