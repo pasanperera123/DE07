@@ -1,11 +1,8 @@
 # Use AWS Lambda Python base image
 FROM public.ecr.aws/lambda/python:3.11
 
-# Set working directory
-WORKDIR /app
-
-# Install build dependencies
-COPY . /app
+# Copy code into Lambda's default directory
+COPY . ${LAMBDA_TASK_ROOT}
 
 # Install system dependencies required to build numpy/pandas
 RUN pip install --upgrade pip \
